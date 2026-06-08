@@ -1,6 +1,13 @@
 from riotwatcher import LolWatcher, RiotWatcher, ApiError
-from match_data import MatchData, TeamData, PlayerData
+from LoL_live_game_prediction.Entities.match_data import MatchData, TeamData, PlayerData
 import time
+from pathlib import Path
+
+BASE_DIR = BASE_DIR = Path(__file__).resolve().parent.parent
+CHAMP_CSV_PATH = (BASE_DIR.parent/"LeagueAssets"/"ChampIdAndName.csv")
+ITEM_CSV_PATH = (BASE_DIR.parent/"LeagueAssets"/"ItemIdNameGold.csv")
+MATCH_CSV_PATH = (BASE_DIR.parent/"League_Match_Data")
+
 
 class RawDataScraper:
     def __init__(self, apikey:str):
@@ -9,23 +16,11 @@ class RawDataScraper:
         self.rate_sec:int = 0
         self.rate_min:int = 0
 
-    def api_rate_limit(self):
-        self.rate_sec += 1
-        self.rate_min += 1
-        if self.rate_sec > 20:
-            print("Sec limit reached waiting 2 seconds")
-            time.sleep(2)
-            self.rate_sec = 0
-        if self.rate_min > 100:
-            print("Min limit reached waiting 2 minutes")
-            time.sleep(121)
-            self.rate_min = 0   
-
     def get_champ_id_name(self):
         game_version = self.lolWatcher.data_dragon.versions_for_region('eune')
         champions_version = game_version['n']['champion']
         champions_dict:dict = self.lolWatcher.data_dragon.champions(champions_version, full=True)['keys']
-        filepath = f"D:\\AA Egyetem stuff\\Projektmunka\\ProjektmunkaCode\\PythonStuff\\LeagueAssets\\ChampIdAndName.csv"
+        filepath = CHAMP_CSV_PATH
         with open(filepath, 'w') as file:
             file.write("ID,Name\n")
         with open(filepath, 'a') as file:
@@ -41,7 +36,7 @@ class RawDataScraper:
         item_version = game_version['n']['item']
         item_dict:dict = self.lolWatcher.data_dragon.items(item_version)
         data:dict = item_dict['data']
-        filepath = f"D:\\AA Egyetem stuff\\Projektmunka\\ProjektmunkaCode\\PythonStuff\\LeagueAssets\\ItemIdNameGold.csv"
+        filepath = ITEM_CSV_PATH
         with open(filepath, 'w') as file:
             file.write("ID;Name;Gold\n")
         with open(filepath, 'a') as file:
@@ -51,9 +46,9 @@ class RawDataScraper:
         print("Item CVS file is complete!")
             
 
-    def scrape_ranked_data_from_api(self, dataNumber: int, fileName: str, playerName: str, playerTag: str):
+    def scrape_ranked_data_from_api(self, dataNumber: int, fileName: str, playerName: str, playerTag: str, gameSeason: int, fromPatch: int):
         try:
-            filepath = f"D:\\AA Egyetem stuff\\Projektmunka\\ProjektmunkaCode\\PythonStuff\\League_Match_Data\\{fileName}.csv"
+            filepath = MATCH_CSV_PATH/f"{fileName}.csv"
             if not os.path.exists(filepath):
                 with open(filepath, 'x') as file:
                     file.write("GameVersion,"
@@ -124,7 +119,7 @@ class RawDataScraper:
                         match_details = ranked_match['info']
                         game_version_tmp = match_details['gameVersion'].split(".")[0:2]
 
-                        if match_details['gameEndTimestamp'] != None and match_details['gameDuration'] > 900 and int(game_version_tmp[0]) == 16 and int(game_version_tmp[1]) > 0:
+                        if match_details['gameEndTimestamp'] != None and match_details['gameDuration'] > 900 and int(game_version_tmp[0]) == gameSeason and int(game_version_tmp[1]) >= fromPatch:
 
                             players_puuids = ranked_match['metadata']['participants']
                             for player_puuid in players_puuids:
@@ -238,7 +233,6 @@ class RawDataScraper:
 
     def api_test(self):
         try:
-            self.api_rate_limit()
             my_puuid = self.riotWatcher.account.by_riot_id("EUROPE", "", "")['puuid']
             
             print(my_puuid)
@@ -261,5 +255,5 @@ if __name__ == "__main__":
     scraper = RawDataScraper(os.getenv('API_KEY'))
     scraper.get_champ_id_name()
     scraper.get_item_id_price()
-    scraper.scrape_ranked_data_from_api(10000, "2026_01_09_23_00", "", "")
+    scraper.scrape_ranked_data_from_api(15000, "", "", "", 16, 9)
     

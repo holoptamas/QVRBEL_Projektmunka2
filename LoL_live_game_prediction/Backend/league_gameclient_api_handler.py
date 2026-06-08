@@ -1,23 +1,22 @@
 import requests
-import match_data
+from pathlib import Path
+from LoL_live_game_prediction.Entities.match_data import GameClientTeamData, GameClientMatchData, GameClientPlayerData
 import pandas as pd
+
+BASE_DIR = BASE_DIR = Path(__file__).resolve().parent.parent
+CHAMP_CSV_PATH = (BASE_DIR.parent/"LeagueAssets"/"ChampIdAndName.csv")
+ITEM_CSV_PATH = (BASE_DIR.parent/"LeagueAssets"/"ItemIdNameGold.csv")
 
 class GameClientApiDataRetriever:
     def __init__(self):
-        self.base_url = "https://127.0.0.1:2999/liveclientdata/allgamedata"
-        self.game_client_data: match_data.GameClientMatchData
-        self.champ_id_df = pd.read_csv("D:\\AA Egyetem stuff\\Projektmunka\\ProjektmunkaCode\\PythonStuff\\LeagueAssets\\ChampIdAndName.csv")
-        self.item_id_df = pd.read_csv("D:\\AA Egyetem stuff\\Projektmunka\\ProjektmunkaCode\\PythonStuff\\LeagueAssets\\ItemIdNameGold.csv", sep=";")
+        self.game_client_data: GameClientMatchData
+        self.champ_id_df = pd.read_csv(CHAMP_CSV_PATH)
+        self.item_id_df = pd.read_csv(ITEM_CSV_PATH, sep=";")
 
-    def data_tester(self):
-        response = requests.get(self.base_url, verify=False)
-        if response.status_code == 200:
-            lol_data = response.json()
-            self.raw_match_data(lol_data)
-            print("Wow it worked!")
-        else:
-            print("Rip")
+    def get_game_cliend_data(self):
+        return self.game_client_data
 
+    #remove maybe
     def write_match_data(self):
         print(f"Current match time: {self.game_client_data.game_duration}")
         print(f"---Blue Team---")
@@ -51,7 +50,7 @@ class GameClientApiDataRetriever:
 
             if len(split_name3) == 2:
                 champion_Id = self.champ_id_df[self.champ_id_df['Name'] == split_name3[0] + split_name3[1]]['ID']
-            elif len(split_name2) == 2 :
+            elif len(split_name2) == 2:
                 champion_Id = self.champ_id_df[self.champ_id_df['Name'] == (split_name2[0] + split_name2[1]).capitalize()]['ID'] 
             elif len(split_name1) == 2:
                 champion_Id = self.champ_id_df[self.champ_id_df['Name'] == split_name1[0] + split_name1[1]]['ID'] 
@@ -65,7 +64,7 @@ class GameClientApiDataRetriever:
                 gold_spent += int(curr_item_gold.iloc[0])
 
             scores = player['scores']
-            current_player = match_data.GameClientPlayerData(player['riotIdGameName'],
+            current_player = GameClientPlayerData(player['riotIdGameName'],
                                                              player['position'],
                                                              int(champion_Id.iloc[0]),
                                                              player['championName'],
@@ -153,7 +152,6 @@ class GameClientApiDataRetriever:
         blue_dragons = 0
         blue_grubs = 0
         blue_riftherald = 0
-        blue_atakhan = 0
         blue_baron = 0
 
         red_towers = 0
@@ -161,63 +159,55 @@ class GameClientApiDataRetriever:
         red_dragons = 0
         red_grubs = 0
         red_riftherald = 0
-        red_atakhan = 0
         red_baron = 0
 
         for event in events_data:
             if event['EventID'] > 2:
                 if event['EventName'] != "FirstBlood":
                     if event['EventName'] != "Ace":
-                        if blue_player_names.__contains__(event['KillerName']):
-                            if event['EventName'] == "HordeKill":
-                                blue_grubs += 1
-                            elif event['EventName'] == "DragonKill":
-                                blue_dragons += 1
-                            elif event['EventName'] == "HeraldKill":
-                                blue_riftherald += 1
-                            elif event['EventName'] == "TurretKilled":
-                                blue_towers += 1
-                            elif event['EventName'] == "AtakhanKilled":
-                                blue_atakhan += 1
-                            elif event['EventName'] == "BaronKill":
-                                blue_baron += 1
-                            elif event['EventName'] == "InhibKilled":
-                                blue_inhibs += 1
-                        elif red_player_names.__contains__(event['KillerName']):
-                            if event['EventName'] == "HordeKill":
-                                red_grubs += 1
-                            elif event['EventName'] == "DragonKill":
-                                red_dragons += 1
-                            elif event['EventName'] == "HeraldKill":
-                                red_riftherald += 1
-                            elif event['EventName'] == "TurretKilled":
-                                red_towers += 1
-                            elif event['EventName'] == "BaronKill":
-                                red_baron += 1
-                            elif event['EventName'] == "AtakhanKilled":
-                                red_atakhan += 1
-                            elif event['EventName'] == "InhibKilled":
-                                red_inhibs += 1
+                        if event['EventName'] != "InhibRespawned":
+                            if blue_player_names.__contains__(event['KillerName']):
+                                if event['EventName'] == "HordeKill":
+                                    blue_grubs += 1
+                                elif event['EventName'] == "DragonKill":
+                                    blue_dragons += 1
+                                elif event['EventName'] == "HeraldKill":
+                                    blue_riftherald += 1
+                                elif event['EventName'] == "TurretKilled":
+                                    blue_towers += 1
+                                elif event['EventName'] == "BaronKill":
+                                    blue_baron += 1
+                                elif event['EventName'] == "InhibKilled":
+                                    blue_inhibs += 1
+                            elif red_player_names.__contains__(event['KillerName']):
+                                if event['EventName'] == "HordeKill":
+                                    red_grubs += 1
+                                elif event['EventName'] == "DragonKill":
+                                    red_dragons += 1
+                                elif event['EventName'] == "HeraldKill":
+                                    red_riftherald += 1
+                                elif event['EventName'] == "TurretKilled":
+                                    red_towers += 1
+                                elif event['EventName'] == "BaronKill":
+                                    red_baron += 1
+                                elif event['EventName'] == "InhibKilled":
+                                    red_inhibs += 1
 
-        blue_team = match_data.GameClientTeamData(blue_players, blue_towers, blue_inhibs, blue_dragons, blue_grubs, blue_riftherald, blue_atakhan, blue_baron, 0)
-        red_team = match_data.GameClientTeamData(red_players, red_towers, red_inhibs, red_dragons, red_grubs, red_riftherald, red_atakhan, red_baron, 0)
+        blue_team = GameClientTeamData(blue_players, blue_towers, blue_inhibs, blue_dragons, blue_grubs, blue_riftherald, blue_baron)
+        red_team = GameClientTeamData(red_players, red_towers, red_inhibs, red_dragons, red_grubs, red_riftherald, red_baron)
 
         game_time:float = game_data['gameTime']
 
-        self.game_client_data = match_data.GameClientMatchData(game_time.__round__(), blue_team, red_team)
+        self.game_client_data = GameClientMatchData(game_time.__round__(), blue_team, red_team)
 
     def match_data_to_df(self):
         data = {"GameDuration": self.game_client_data.game_duration,
-                "BlueTeamKills": self.game_client_data.blue_team.team_kills,
-                "BlueTeamGoldSpent": self.game_client_data.blue_team.team_gold_spent,
                 "BlueTeamTowersTaken": self.game_client_data.blue_team.towers_taken,
                 "BlueTeamInhibitorsTaken": self.game_client_data.blue_team.inhibitors_taken,
                 "BlueTeamDragonsTaken": self.game_client_data.blue_team.dragons_taken,
                 "BlueTeamGrubsTaken": self.game_client_data.blue_team.grubs_taken,
                 "BlueTeamRiftheraldTaken": self.game_client_data.blue_team.riftherald_taken,
-                "BlueTeamAtakhanTaken": self.game_client_data.red_team.atakhan_taken,
                 "BlueTeamBaronTaken": self.game_client_data.blue_team.baron_taken,
-                "BlueTeamFeats": self.game_client_data.blue_team.feats,
                 "BluePlayer1Role": self.game_client_data.blue_team.players[0].role,
                 "BluePlayer1ChampionId": self.game_client_data.blue_team.players[0].champ_id,
                 "BluePlayer1GoldSpent": self.game_client_data.blue_team.players[0].gold_spent,
@@ -263,16 +253,12 @@ class GameClientApiDataRetriever:
                 "BluePlayer5Assists": self.game_client_data.blue_team.players[4].assists,
                 "BluePlayer5CreepScore": self.game_client_data.blue_team.players[4].creepscore,
                 "BluePlayer5WardScore": self.game_client_data.blue_team.players[4].wardscore,
-                "RedTeamKills": self.game_client_data.red_team.team_kills,
-                "RedTeamGoldSpent": self.game_client_data.red_team.team_gold_spent,
                 "RedTeamTowersTaken": self.game_client_data.red_team.towers_taken,
                 "RedTeamInhibitorsTaken": self.game_client_data.red_team.inhibitors_taken,
                 "RedTeamDragonsTaken": self.game_client_data.red_team.dragons_taken,
                 "RedTeamGrubsTaken": self.game_client_data.red_team.grubs_taken,
                 "RedTeamRiftheraldTaken": self.game_client_data.red_team.riftherald_taken,
-                "RedTeamAtakhanTaken": self.game_client_data.red_team.atakhan_taken,
                 "RedTeamBaronTaken": self.game_client_data.red_team.baron_taken,
-                "RedTeamFeats": self.game_client_data.red_team.feats,
                 "RedPlayer1Role": self.game_client_data.red_team.players[0].role,
                 "RedPlayer1ChampionId": self.game_client_data.red_team.players[0].champ_id,
                 "RedPlayer1GoldSpent": self.game_client_data.red_team.players[0].gold_spent,

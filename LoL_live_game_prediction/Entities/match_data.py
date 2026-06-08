@@ -67,18 +67,14 @@ class GameClientPlayerData:
         
         
 class GameClientTeamData:
-    def __init__(self, players: list[GameClientPlayerData], towers_taken: int, inhibitors_taken: int, dragons_taken: int, grubs_taken: int, riftherald_taken: int, atakhan_taken: int, baron_taken: int, feats: int):
+    def __init__(self, players: list[GameClientPlayerData], towers_taken: int, inhibitors_taken: int, dragons_taken: int, grubs_taken: int, riftherald_taken: int, baron_taken: int):
         self.players: list[GameClientPlayerData] = players
         self.towers_taken: int = towers_taken
         self.inhibitors_taken: int = inhibitors_taken
         self.dragons_taken: int = dragons_taken
         self.grubs_taken: int = grubs_taken
         self.riftherald_taken: int = riftherald_taken
-        self.atakhan_taken: int = atakhan_taken
         self.baron_taken: int = baron_taken
-        self.feats: int = feats
-
-        #feats and atakhan are temporary
 
         self.team_kills = 0
         for player in self.players:
