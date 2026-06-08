@@ -1,0 +1,205 @@
+<ng-container *ngIf="dashboardData as dashboard; else dashboardEmpty">
+
+  <ng-container *ngIf="dashboard.matchData.status === 'success'; else noMatchData">
+
+    <div class="container-fluid">
+
+        <div class="row py-1">
+            
+          <div class="col-12 col-lg-4">
+            <div class="bg-primary p-3 rounded-5 mb-1">
+              <h1 class="text-light text-center">BLUE TEAM</h1>
+              <hr>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Team kills</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.teamKills}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start  ">Team gold spent</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.teamGoldSpent}}</h6>
+              </span>
+              <span class="clearfix ">
+                <h6 class="text-light float-start ">Towers taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.towersTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Inhibitors taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.inhibitorsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Grubs Taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.grubsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Dragons taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.dragonsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Riftherald taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.blue_team?.riftheraldTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start">Baron taken</h6>
+                <h6 class="text-light float-end">{{dashboardData?.matchData?.blue_team?.baronTaken}}</h6>
+              </span>
+            </div>
+          
+            <ng-container *ngFor="let item of dashboardData?.matchData?.blue_team?.players">
+              <div class="bg-primary p-3 rounded-5 mb-1">
+                <span class="clearfix">
+                  <h4 class="text-light float-start">{{item.role}}</h4>
+                  <h4 class="text-light float-end">{{item.championName}}</h4>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start">Player name</h6>
+                  <h6 class="text-light float-end ">{{item.playerName}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start">K/D/A</h6>
+                  <h6 class="text-light float-end ">{{item.kills}}/{{item.deaths}}/{{item.assists}}</h6>
+                </span>
+                <span class="clearfix ">
+                  <h6 class="text-light float-start ">Level</h6>
+                  <h6 class="text-light float-end ">{{item.level}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Gold spent</h6>
+                  <h6 class="text-light float-end ">{{item.goldSpent}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Creep score</h6>
+                  <h6 class="text-light float-end ">{{item.creepScore}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Ward score</h6>
+                  <h6 class="text-light float-end ">{{item.wardScore}}</h6>
+                </span>
+              </div>
+            </ng-container>
+          
+          </div>
+
+          <div class="col-12 col-lg-4  py-5 border border-5 border-white rounded-5">
+            <h1 class="text-center text-light pt-5 pb-1">Game Duration</h1>
+            <br>
+            <h1 class="text-center text-light pb-5">{{dashboardData?.matchData?.game_minute}}:{{dashboardData?.matchData?.game_seconds}}</h1>
+            <br>
+            <h1 class="text-center text-light pt-5">Prediction</h1>
+            <br>
+            <div *ngIf="dashboardData?.prediction?.status === 'success';else predictionNotAvailable">
+            	<ng-container *ngIf="dashboardData?.prediction as prediction">
+                <div *ngIf="prediction.blueWinProbability > prediction.redWinProbability">
+                  <h1 class="text-center text-primary pt-3">BLUE</h1>
+                  <h3 class="text-center text-light pt-3">{{prediction.blueWinProbability*100 | number:'1.1-1'}} %</h3>
+                  <h4 class="text-center text-light pt-3">Confidence</h4>
+                  <h3 class="text-center text-light pt-3">{{prediction.confidence*100 | number:'1.1-2'}} %</h3>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="dashboardData?.prediction as prediction">
+                <div *ngIf="prediction.blueWinProbability < prediction.redWinProbability">
+                  <h1 class="text-center text-danger pt-3">RED</h1>
+                  <h3 class="text-center text-light pt-3">{{prediction.redWinProbability*100 | number:'1.1-1'}} %</h3>
+                  <h4 class="text-center text-light pt-3">Confidence</h4>
+                  <h3 class="text-center text-light pt-3">{{prediction.confidence*100 | number:'1.1-2'}} %</h3>
+                </div>
+              </ng-container>
+            </div>
+            <ng-template #predictionNotAvailable>
+              <h2 class="text-center text-light pt-5">Waiting until 15 minutes</h2>
+            </ng-template>
+          </div>
+
+
+          <div class="col-12 col-lg-4">
+            
+            <div class="bg-danger p-3 rounded-5 mb-1">
+              <h1 class="text-light text-center">RED TEAM</h1>
+              <hr>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Team kills</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.teamKills}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start  ">Team gold spent</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.teamGoldSpent}}</h6>
+              </span>
+              <span class="clearfix ">
+                <h6 class="text-light float-start ">Towers taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.towersTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Inhibitors taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.inhibitorsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Grubs Taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.grubsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Dragons taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.dragonsTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start ">Riftherald taken</h6>
+                <h6 class="text-light float-end ">{{dashboardData?.matchData?.red_team?.riftheraldTaken}}</h6>
+              </span>
+              <span class="clearfix">
+                <h6 class="text-light float-start">Baron taken</h6>
+                <h6 class="text-light float-end">{{dashboardData?.matchData?.red_team?.baronTaken}}</h6>
+              </span>
+            </div>
+            
+            <ng-container *ngFor="let item of dashboardData?.matchData?.red_team?.players">
+              <div class="bg-danger p-3 rounded-5 mb-1">
+                <span class="clearfix">
+                  <h4 class="text-light float-start">{{item.championName}}</h4>
+                  <h4 class="text-light float-end">{{item.role}}</h4>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start">Player name</h6>
+                  <h6 class="text-light float-end ">{{item.playerName}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start">K/D/A</h6>
+                  <h6 class="text-light float-end ">{{item.kills}}/{{item.deaths}}/{{item.assists}}</h6>
+                </span>
+                <span class="clearfix ">
+                  <h6 class="text-light float-start ">Level</h6>
+                  <h6 class="text-light float-end ">{{item.level}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Gold spent</h6>
+                  <h6 class="text-light float-end ">{{item.goldSpent}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Creep score</h6>
+                  <h6 class="text-light float-end ">{{item.creepScore}}</h6>
+                </span>
+                <span class="clearfix">
+                  <h6 class="text-light float-start ">Ward score</h6>
+                  <h6 class="text-light float-end ">{{item.wardScore}}</h6>
+                </span>
+              </div>
+            </ng-container>
+            
+          </div>
+          
+        </div>
+      </div>
+      
+  </ng-container>
+
+  <ng-template #noMatchData>
+    <div class="m-5 p-5 w-75 bg-warning text-white rounded mx-auto">
+      <h1>Waiting for match data</h1>
+      <p>{{ dashboard.matchData.message }}</p>
+    </div>
+  </ng-template>
+
+</ng-container>
+
+<ng-template #dashboardEmpty>
+  <div class="m-5 p-5 w-75 bg-danger text-white rounded mx-auto">
+    <h1>Waiting for backend...</h1>
+  </div>
+</ng-template>
